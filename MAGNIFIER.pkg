@@ -40,7 +40,8 @@ CREATE OR REPLACE PACKAGE MAGNIFIER IS
 																					 'INTERSECT',
 																					 'MINUS',
 																					 'ORDER',
-																					 'FOR');
+																					 'FOR',
+																					 ';');
 
 	FUNCTION DUAL_MATCH(P_SQL    IN CLOB,
 											P_START  IN INTEGER,
@@ -183,7 +184,17 @@ CREATE OR REPLACE PACKAGE BODY MAGNIFIER IS
 								VD AS
 								 (SELECT C.*,
 												MAX(C.LEVEL_SHIFT) OVER(ORDER BY NULL ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) LEVEL_GROUP,
-												MAX(C.SEG_SHIFT) OVER(ORDER BY NULL ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) SEG_GROUP
+												MAX(C.SEG_SHIFT) OVER(ORDER BY NULL ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) SEG_GROUP,
+												SUM(CASE
+															WHEN C.FRAG_TYPE IN ('SELECT',
+																									 'INSERT',
+																									 'DELETE',
+																									 'UPDATE',
+																									 'MERGE') THEN
+															 1
+															ELSE
+															 0
+														END) OVER(PARTITION BY NULL) QUERY_DML
 									 FROM VC C),
 								VE AS
 								 (SELECT D.BEGIN_POS,
@@ -200,7 +211,8 @@ CREATE OR REPLACE PACKAGE BODY MAGNIFIER IS
 													 NULL
 												END LOGIC_SHIFT
 									 FROM VD D
-									WHERE D.FRAG_TYPE IN ('WHERE', 'ON', 'HAVING')
+									WHERE D.QUERY_DML > 0
+										AND D.FRAG_TYPE IN ('WHERE', 'ON', 'HAVING')
 										AND D.FRAG_TEXT NOT IN ('(', ')')),
 								VF AS
 								 (SELECT E.*,
