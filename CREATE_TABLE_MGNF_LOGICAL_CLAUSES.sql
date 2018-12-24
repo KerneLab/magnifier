@@ -1,4 +1,4 @@
-create table MGNF_LOGICAL_SEGMENTS
+create table MGNF_LOGICAL_CLAUSES
 (
   user_id   VARCHAR2(100) not null,
   program   VARCHAR2(100) not null,
