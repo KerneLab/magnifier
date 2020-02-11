@@ -24,5 +24,6 @@ SELECT * FROM DEMO_TABLE T
 |T.GRP = 3|UNCOVER|
 |T.RNK = 3|COVERED|
 
+![Coverage](https://github.com/KerneLab/magnifier/raw/master/images/example.png)
 
 > 要看清甲骨文，你可能需要一块放大镜
